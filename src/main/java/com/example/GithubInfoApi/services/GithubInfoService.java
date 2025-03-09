@@ -1,16 +1,22 @@
 package com.example.GithubInfoApi.services;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import com.example.GithubInfoApi.exceptions.UserNotFoundException;
 import com.example.GithubInfoApi.records.Branch;
+import com.example.GithubInfoApi.records.CompiledInfo;
 import com.example.GithubInfoApi.records.Repo;
 import com.example.GithubInfoApi.records.User;
+
+import io.smallrye.mutiny.Multi;
 
 @Service
 public class GithubInfoService {
@@ -20,7 +26,7 @@ public class GithubInfoService {
     public User getUserInfo(String username) {
         try {
             return restTemplate.getForObject(apiUrl + username, User.class);
-        } catch (Exception e) {
+        } catch (RestClientException e) {
             throw e;
         }
     }
@@ -38,5 +44,24 @@ public class GithubInfoService {
             restTemplate.exchange(branchesUrl, HttpMethod.GET, null, new ParameterizedTypeReference<List<Branch>>() {});
         return branchesResponse.getBody();
     }
+
+    public Multi<CompiledInfo> getCompiledInfo(String username) {
+        try {
+            List<CompiledInfo> compiledInfos = new ArrayList<>();
+
+            User user = this.getUserInfo(username);
+
+            List<Repo> repos = this.getUserRepos(user);
+
+            for (Repo repo : repos) {
+                List<Branch> branches = this.getRepoBranches(repo);
+                compiledInfos.add(new CompiledInfo(user.login(), repo.name(), branches));
+            }
+
+            return Multi.createFrom().iterable(compiledInfos);
+        } catch (RestClientException e) {
+            throw new UserNotFoundException();
+        }
+    } 
 
 }
