@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.example.GithubInfoApi.exceptions.UserNotFoundException;
 import com.example.GithubInfoApi.records.Branch;
-import com.example.GithubInfoApi.records.CompiledInfo;
+import com.example.GithubInfoApi.records.CompiledRepoInfo;
 import com.example.GithubInfoApi.records.Repo;
 import com.example.GithubInfoApi.records.User;
 
@@ -45,9 +45,9 @@ public class GithubInfoService {
         return branchesResponse.getBody();
     }
 
-    public Multi<CompiledInfo> getCompiledInfo(String username) {
+    public Multi<CompiledRepoInfo> getCompiledInfo(String username) {
         try {
-            List<CompiledInfo> compiledInfos = new ArrayList<>();
+            List<CompiledRepoInfo> compiledReposInfo = new ArrayList<>();
 
             User user = this.getUserInfo(username);
 
@@ -55,10 +55,10 @@ public class GithubInfoService {
 
             for (Repo repo : repos) {
                 List<Branch> branches = this.getRepoBranches(repo);
-                compiledInfos.add(new CompiledInfo(user.login(), repo.name(), branches));
+                compiledReposInfo.add(new CompiledRepoInfo(user.login(), repo.name(), branches));
             }
 
-            return Multi.createFrom().iterable(compiledInfos);
+            return Multi.createFrom().iterable(compiledReposInfo);
         } catch (RestClientException e) {
             throw new UserNotFoundException();
         }

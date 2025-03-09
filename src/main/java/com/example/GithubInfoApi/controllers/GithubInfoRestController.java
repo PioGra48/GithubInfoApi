@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.GithubInfoApi.exceptions.UserNotFoundException;
-import com.example.GithubInfoApi.records.CompiledInfo;
+import com.example.GithubInfoApi.records.CompiledRepoInfo;
 import com.example.GithubInfoApi.records.ErrorMessage;
 import com.example.GithubInfoApi.services.GithubInfoService;
 
@@ -24,7 +24,7 @@ public class GithubInfoRestController {
     GithubInfoService githubInfoService = new GithubInfoService();
 
     @GetMapping("/{username}")
-    public ResponseEntity<Multi<CompiledInfo>> getUserReposInfo(@PathVariable("username") String username) {
+    public ResponseEntity<Multi<CompiledRepoInfo>> getUserReposInfo(@PathVariable("username") String username) {
         return new ResponseEntity<>(githubInfoService.getCompiledInfo(username), HttpStatus.OK);
     }
 
